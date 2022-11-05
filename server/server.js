@@ -1,4 +1,6 @@
 require('dotenv').config();
+
+//authentication
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -7,6 +9,14 @@ const cookieSession = require('cookie-session');
 const passportSetup = require('./passport');
 const authRoute = require('./routes/auth');
 
+//database
+const mongoose = require('mongoose');
+mongoose.connect(
+  'mongodb+srv://sneha:12345@cluster0.kc11ulc.mongodb.net/?retryWrites=true&w=majority'
+);
+const User = require('./models/database');
+
+//express
 const http = require('http');
 const path = require('path');
 const { Server } = require('socket.io');
@@ -65,8 +75,17 @@ io.on('connection', (socket) => {
   //client is emitting, the server listens
   socket.on(ACTIONS.JOIN, ({ roomId, username }) => {
     userSocketMap[socket.id] = username;
-    // ! add database insert query here
     socket.join(roomId);
+    // ! store username and roomId to database
+    async function run() {
+      const user = await User.create({
+        username: username,
+        roomId: roomId,
+        code: '',
+      });
+      // console.log(user);
+    }
+    run();
 
     //if not the first client, getAllClients
     const clients = getAllConnectedClients(roomId);
@@ -88,6 +107,10 @@ io.on('connection', (socket) => {
   socket.on(ACTIONS.SYNC_CODE, ({ socketId, code }) => {
     io.to(socketId).emit(ACTIONS.CODE_CHANGE, { code });
   });
+
+  // socket.on(ACTIONS.LEAVE, ({ roomId, code }) => {
+  //   io.to(roomId).emit(ACTIONS.LEAVE, { code });
+  // });
 
   socket.on('disconnecting', () => {
     // ! here the saving the code editor contents into the database code
