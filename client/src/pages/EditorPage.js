@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import ACTIONS from '../Actions';
 import Client from '../components/Client';
 import Editor from '../components/Editor';
+import axios from 'axios';
 import { initSocket } from '../socket';
 import {
   useLocation,
@@ -12,7 +13,7 @@ import {
   useParams,
 } from 'react-router-dom';
 
-const EditorPage = () => {
+const EditorPage = (props) => {
   //useRef does not cause rerendering of the component
   const socketRef = useRef(null);
   const codeRef = useRef(null);
@@ -91,8 +92,11 @@ const EditorPage = () => {
     }
   }
 
-  function leaveRoom() {
-    window.open(`${process.env.REACT_APP_API + URL}/auth/logout`, '_self');
+  async function leaveRoom(e) {
+    if (props.user) {
+      window.open(`${process.env.REACT_APP_API_URL}/auth/logout`, '_self');
+    }
+
     reactNavigator('/');
   }
 

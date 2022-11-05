@@ -3,7 +3,7 @@ import { v4 as uuidV4 } from 'uuid';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
-const Home = () => {
+const Home = (props) => {
   const navigate = useNavigate();
 
   const [roomId, setRoomId] = useState('');
@@ -37,8 +37,17 @@ const Home = () => {
 
   const googleAuth = () => {
     // console.log(process.env.REACT_APP_API_URL);
-    window.open(`${process.env.REACT_APP_API_URL}/auth/google`, '_self');
+    window.open(
+      `${process.env.REACT_APP_API_URL}/auth/google/callback`,
+      '_self'
+    );
   };
+
+  useEffect(() => {
+    if (props.user) {
+      setUsername(props.user.name);
+    }
+  }, [props.user]);
 
   return (
     <div className='homePageWrapper'>
@@ -61,11 +70,15 @@ const Home = () => {
             onChange={(e) => setUsername(e.target.value)}
             value={username}
             onKeyUp={handleInputEnter}
+            disabled={props.user ? true : false}
           />
           <div className='btns'>
-            <button className='btn googleBtn' onClick={googleAuth}>
-              Sign in with Google
-            </button>
+            {!props.user ? (
+              <button className='btn googleBtn' onClick={googleAuth}>
+                Sign in with Google
+              </button>
+            ) : null}
+
             <button className='btn joinBtn' onClick={joinRoom}>
               Join
             </button>

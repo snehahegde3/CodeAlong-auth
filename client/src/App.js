@@ -49,8 +49,11 @@ function App() {
       </div>
       <BrowserRouter>
         <Routes>
-          <Route path='/' element={<Home />}></Route>
-          <Route path='/editor/:roomId' element={<EditorPage />}></Route>
+          <Route path='/' element={<Home user={user} />}></Route>
+          <Route
+            path='/editor/:roomId'
+            element={<EditorPage user={user} />}
+          ></Route>
         </Routes>
       </BrowserRouter>
     </>

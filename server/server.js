@@ -15,16 +15,11 @@ const ACTIONS = require('./Actions');
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static('build'));
-app.use((req, res, next) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
 app.use(
   cookieSession({
     name: 'session',
     keys: ['incsmol'],
-    maxAge: 60, // * a minute maxAge
+    maxAge: 60 * 100, // * a minute maxAge
   })
 );
 
@@ -41,6 +36,11 @@ app.use(
 );
 
 app.use('/auth', authRoute);
+
+// app.use(express.static('build'));
+// app.use((req, res, next) => {
+//   res.sendFile(path.join(__dirname, 'build', 'index.html'));
+// });
 
 const userSocketMap = {
   // 'socketId' : 'user'

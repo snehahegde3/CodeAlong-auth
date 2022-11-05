@@ -3,6 +3,8 @@ const router = require('express').Router();
 const passport = require('passport');
 
 router.get('/login/success', (req, res) => {
+  // console.log(req.session);
+  // console.log(req.user);
   if (req.user) {
     res.status(200).json({
       error: false,
@@ -32,7 +34,7 @@ router.get(
 router.get('/google', passport.authenticate('google', ['profile', 'email']));
 
 router.get('/logout', (req, res) => {
-  req.logout();
+  res.clearCookie('session');
   res.redirect(process.env.CLIENT_URL);
 });
 
