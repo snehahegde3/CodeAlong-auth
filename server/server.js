@@ -80,6 +80,7 @@ io.on('connection', (socket) => {
     async function run() {
       const user = await User.create({
         username: username,
+        socketId: socket.id,
         roomId: roomId,
         code: '',
       });
@@ -101,10 +102,24 @@ io.on('connection', (socket) => {
   });
 
   socket.on(ACTIONS.CODE_CHANGE, ({ roomId, code }) => {
+    async function update_code() {
+      await User.updateMany(
+        { roomId: { $eq: roomId } },
+        { $set: { code: code } }
+      );
+    }
+    update_code();
     socket.in(roomId).emit(ACTIONS.CODE_CHANGE, { code });
   });
 
   socket.on(ACTIONS.SYNC_CODE, ({ socketId, code }) => {
+    async function update_code() {
+      await User.updateMany(
+        { socketId: { $eq: socketId } },
+        { $set: { code: code } }
+      );
+    }
+    update_code();
     io.to(socketId).emit(ACTIONS.CODE_CHANGE, { code });
   });
 
@@ -113,7 +128,6 @@ io.on('connection', (socket) => {
   // });
 
   socket.on('disconnecting', () => {
-    // ! here the saving the code editor contents into the database code
     const rooms = [...socket.rooms];
     rooms.forEach((roomId) => {
       socket.in(roomId).emit(ACTIONS.DISCONNECTED, {

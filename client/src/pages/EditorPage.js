@@ -3,7 +3,6 @@ import toast from 'react-hot-toast';
 import ACTIONS from '../Actions';
 import Client from '../components/Client';
 import Editor from '../components/Editor';
-import axios from 'axios';
 import { initSocket } from '../socket';
 import {
   useLocation,

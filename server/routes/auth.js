@@ -2,10 +2,19 @@ require('dotenv').config();
 const router = require('express').Router();
 const passport = require('passport');
 
+const mongoose = require('mongoose');
+mongoose.connect(
+  'mongodb+srv://sneha:12345@cluster0.kc11ulc.mongodb.net/?retryWrites=true&w=majority'
+);
+const User = require('../models/database');
+
 router.get('/login/success', (req, res) => {
   // console.log(req.session);
   // console.log(req.user);
   if (req.user) {
+    // async function fetch_code() {
+    //   const user = await User.findOne({ username: { $eq: req.user.name } });
+    // }
     res.status(200).json({
       error: false,
       message: 'Successfully logged in',

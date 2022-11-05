@@ -10,6 +10,7 @@ mongoose.connect(
 const userSchema = new mongoose.Schema(
   {
     username: String,
+    socketId: String,
     roomId: String,
     code: String,
   },
