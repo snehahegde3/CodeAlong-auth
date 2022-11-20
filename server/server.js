@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const mongoose = require('mongoose');
 //authentication
 const express = require('express');
 const app = express();
@@ -8,13 +9,7 @@ const passport = require('passport');
 const cookieSession = require('cookie-session');
 const passportSetup = require('./passport');
 const authRoute = require('./routes/auth');
-
-//database
-const mongoose = require('mongoose');
-mongoose.connect(
-  'mongodb+srv://sneha:12345@cluster0.kc11ulc.mongodb.net/?retryWrites=true&w=majority'
-);
-const User = require('./models/database');
+const Room = require('./models/database');
 
 //express
 const http = require('http');
@@ -56,6 +51,24 @@ const userSocketMap = {
   // 'socketId' : 'user'
 };
 
+async function createRoom(roomId) {
+  console.log(roomId);
+  let newRoom;
+  const existingRoom = await Room.findById(roomId);
+  console.log(existingRoom);
+  if (existingRoom) {
+    newRoom = existingRoom;
+    console.log('room found', newRoom);
+  } else {
+    newRoom = await Room.create({
+      _id: roomId,
+      code: '',
+    });
+    console.log('room created', newRoom.code);
+  }
+  return newRoom;
+}
+
 //function to get all connected clints from that room id
 function getAllConnectedClients(roomId) {
   // Map
@@ -69,6 +82,10 @@ function getAllConnectedClients(roomId) {
   );
 }
 
+async function updateRoom(roomId, code) {
+  await Room.updateMany({ roomId: { $eq: roomId } }, { $set: { code: code } });
+}
+
 io.on('connection', (socket) => {
   console.log('socket connected', socket.id);
 
@@ -76,17 +93,10 @@ io.on('connection', (socket) => {
   socket.on(ACTIONS.JOIN, ({ roomId, username }) => {
     userSocketMap[socket.id] = username;
     socket.join(roomId);
-    // ! store username and roomId to database
-    async function run() {
-      const user = await User.create({
-        username: username,
-        socketId: socket.id,
-        roomId: roomId,
-        code: '',
-      });
-      // console.log(user);
-    }
-    run();
+    // ! roomId to database
+    const room = createRoom(roomId);
+    // const roomCode = room.code;
+    // socket.emit('load-code', { roomId, roomCode });
 
     //if not the first client, getAllClients
     const clients = getAllConnectedClients(roomId);
@@ -102,30 +112,13 @@ io.on('connection', (socket) => {
   });
 
   socket.on(ACTIONS.CODE_CHANGE, ({ roomId, code }) => {
-    async function update_code() {
-      await User.updateMany(
-        { roomId: { $eq: roomId } },
-        { $set: { code: code } }
-      );
-    }
-    update_code();
+    updateRoom(roomId, code);
     socket.in(roomId).emit(ACTIONS.CODE_CHANGE, { code });
   });
 
   socket.on(ACTIONS.SYNC_CODE, ({ socketId, code }) => {
-    async function update_code() {
-      await User.updateMany(
-        { socketId: { $eq: socketId } },
-        { $set: { code: code } }
-      );
-    }
-    update_code();
     io.to(socketId).emit(ACTIONS.CODE_CHANGE, { code });
   });
-
-  // socket.on(ACTIONS.LEAVE, ({ roomId, code }) => {
-  //   io.to(roomId).emit(ACTIONS.LEAVE, { code });
-  // });
 
   socket.on('disconnecting', () => {
     const rooms = [...socket.rooms];
@@ -141,7 +134,19 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 8080;
-server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+
+// database;
+
+const mongoConnect = mongoose
+  .connect(
+    'mongodb+srv://sneha:12345@cluster0.fypae6m.mongodb.net/?retryWrites=true&w=majority'
+  )
+  .then((result) => {
+    console.log('Connected to database');
+    server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+  });
+
+// server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
 
 //dependencies needed:
 //express nodemon cors dotenv passport passport-google-auth20 cookie-session

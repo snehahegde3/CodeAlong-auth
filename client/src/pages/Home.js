@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidV4 } from 'uuid';
+import { nanoid } from 'nanoid';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 

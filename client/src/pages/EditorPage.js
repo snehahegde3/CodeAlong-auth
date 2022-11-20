@@ -37,6 +37,10 @@ const EditorPage = (props) => {
         reactNavigator('/');
       }
 
+      // socketRef.current.on('load-code', ({ roomId, roomCode }) => {
+      //   codeRef.current = roomCode;
+      // });
+
       //this is emitted and listened to on the server side
       socketRef.current.emit(ACTIONS.JOIN, {
         roomId,

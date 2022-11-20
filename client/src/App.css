@@ -56,7 +56,7 @@ footer a {
 .btn {
   border: none;
   margin: 5px; /**/
-  padding: 20px;
+  padding: 10px;
   border-radius: 10px;
   font-size: 16px;
   font-weight: bold;
@@ -69,6 +69,7 @@ footer a {
   width: 200px;
   margin-left: auto;
 }
+
 .joinBtn {
   background: #668c8a;
   width: 100px;
