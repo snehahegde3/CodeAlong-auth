@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Codemirror from 'codemirror';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/dracula.css';
@@ -9,7 +9,9 @@ import ACTIONS from '../Actions';
 
 const Editor = ({ socketRef, roomId, onCodeChange }) => {
   const editorRef = useRef(null);
+
   useEffect(() => {
+    // addlist();
     async function init() {
       editorRef.current = Codemirror.fromTextArea(
         document.getElementById('realtimeEditor'),
@@ -19,6 +21,9 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
           autoCloseTags: true,
           autoCloseBrackets: true,
           lineNumbers: true,
+          spellcheck: true,
+          matchBrackets: true,
+          closeBrackets: true,
         }
       );
 
@@ -35,7 +40,7 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
         }
       });
 
-      editorRef.current.setValue(`console.log('Hello World')`);
+      editorRef.current.setValue(``);
     }
     init();
   }, []);
@@ -55,7 +60,11 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
     };
   }, [socketRef.current]);
 
-  return <textarea id='realtimeEditor'></textarea>;
+  return (
+    <>
+      <textarea id='realtimeEditor'></textarea>
+    </>
+  );
 };
 
 export default Editor;

@@ -20,6 +20,8 @@ const ACTIONS = require('./Actions');
 const server = http.createServer(app);
 const io = new Server(server);
 
+const jdoodle = require('jdoodle-api');
+
 app.use(
   cookieSession({
     name: 'session',
@@ -42,9 +44,42 @@ app.use(
 
 app.use('/auth', authRoute);
 
-// app.use(express.static('build'));
-// app.use((req, res, next) => {
-//   res.sendFile(path.join(__dirname, 'build', 'index.html'));
+// app.post('/editor/', (req, res) => {
+//   let codeBody = [];
+//   req
+//     .on('data', (chunk) => {
+//       codeBody.push(chunk);
+//     })
+//     .on('end', () => {
+//       codeBody = Buffer.concat(codeBody).toString();
+//       bodyObj = JSON.parse(codeBody);
+//       console.log(bodyObj);
+//       let code = bodyObj.code.toString();
+//       let language = bodyObj.language.toString();
+//       let inputs = bodyObj.standardIn.toString();
+//       var program = {
+//         script: code,
+//         language: language,
+//         stdin: inputs,
+//         versionIndex: '0',
+//         clientId: '7b8e91133383e32282478bb623213879',
+//         clientSecret:
+//           'a7ea57aeda9059b53a4d8998365e908f42d74ce6911432f1cd85ac00c2d1aedb',
+//       };
+//       request(
+//         {
+//           url: 'https://api.jdoodle.com/v1/execute',
+//           method: 'POST',
+//           json: program,
+//         },
+//         function (error, response, body) {
+//           console.log('error:', error);
+//           console.log('statusCode:', response && response.statusCode);
+//           console.log('body:', body);
+//           res.json(body);
+//         }
+//       );
+//     });
 // });
 
 const userSocketMap = {
@@ -55,16 +90,16 @@ async function createRoom(roomId) {
   console.log(roomId);
   let newRoom;
   const existingRoom = await Room.findById(roomId);
-  console.log(existingRoom);
+  // console.log(existingRoom);
   if (existingRoom) {
     newRoom = existingRoom;
-    console.log('room found', newRoom);
+    // console.log('room found', newRoom);
   } else {
     newRoom = await Room.create({
       _id: roomId,
       code: '',
     });
-    console.log('room created', newRoom.code);
+    // console.log('room created', newRoom.code);
   }
   return newRoom;
 }
@@ -90,13 +125,12 @@ io.on('connection', (socket) => {
   console.log('socket connected', socket.id);
 
   //client is emitting, the server listens
-  socket.on(ACTIONS.JOIN, ({ roomId, username }) => {
+  socket.on(ACTIONS.JOIN, async ({ roomId, username }) => {
     userSocketMap[socket.id] = username;
     socket.join(roomId);
     // ! roomId to database
-    const room = createRoom(roomId);
-    // const roomCode = room.code;
-    // socket.emit('load-code', { roomId, roomCode });
+    const room = await createRoom(roomId);
+    const roomCode = room.code;
 
     //if not the first client, getAllClients
     const clients = getAllConnectedClients(roomId);
@@ -107,6 +141,7 @@ io.on('connection', (socket) => {
         clients,
         username,
         socketId: socket.id,
+        code: roomCode,
       });
     });
   });
@@ -135,8 +170,6 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 8080;
 
-// database;
-
 const mongoConnect = mongoose
   .connect(
     'mongodb+srv://sneha:12345@cluster0.fypae6m.mongodb.net/?retryWrites=true&w=majority'
@@ -145,8 +178,3 @@ const mongoConnect = mongoose
     console.log('Connected to database');
     server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
   });
-
-// server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
-
-//dependencies needed:
-//express nodemon cors dotenv passport passport-google-auth20 cookie-session

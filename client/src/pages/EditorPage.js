@@ -20,11 +20,21 @@ const EditorPage = (props) => {
   const { roomId } = useParams();
   const reactNavigator = useNavigate();
   const [clients, setClients] = useState([]);
+  // const [output, setOutput] = useState('');
 
-  // const user = userDetails.user;
+  // function addlist() {
+  //   var select = document.getElementById('language');
+  //   for (let key in languageList) {
+  //     var option = document.createElement('option');
+  //     option.text = key;
+  //     option.value = languageList[key];
+  //     select.add(option);
+  //   }
+  // }
 
   //for initialisation of the socket-client
   useEffect(() => {
+    addlist();
     const init = async () => {
       socketRef.current = await initSocket();
       socketRef.current.on('connect_error', (err) => handleErrors(err));
@@ -50,7 +60,7 @@ const EditorPage = (props) => {
       // Listening for joined event
       socketRef.current.on(
         ACTIONS.JOINED,
-        ({ clients, username, socketId }) => {
+        ({ clients, username, socketId, code }) => {
           // only notify if he is not the new user that joined
           if (username !== location.state?.username) {
             toast.success(`${username} joined the room.`);
@@ -60,7 +70,7 @@ const EditorPage = (props) => {
 
           // so a new user gets all the previous code when he joins for the first time
           socketRef.current.emit(ACTIONS.SYNC_CODE, {
-            code: codeRef.current,
+            code: code || codeRef.current,
             socketId,
           });
         }
@@ -95,6 +105,33 @@ const EditorPage = (props) => {
     }
   }
 
+  // async function compileIt() {
+  //   document.getElementById('opscreen').style.visibility = 'visible';
+
+  //   var response = await fetch('http://localhost:8080/editor/', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'text/plain',
+  //     },
+  //     body: JSON.stringify({
+  //       code: codeRef.current,
+  //       language: document.querySelector('#language').value,
+  //       standardIn: document
+  //         .querySelector('#stdin')
+  //         .value.split(/[|]+/)
+  //         .join('\n'),
+  //     }),
+  //   })
+  //     .then((response) => {
+  //       console.log(response);
+  //       return response.json();
+  //     })
+  //     .then((data) => {
+  //       // setOutput(data);
+  //     })
+  //     .catch((error) => alert(error.message));
+  // }
+
   async function leaveRoom(e) {
     if (props.user) {
       window.open(`${process.env.REACT_APP_API_URL}/auth/logout`, '_self');
@@ -128,7 +165,13 @@ const EditorPage = (props) => {
           Leave
         </button>
       </div>
+
       <div className='editorWrap'>
+        <div className='actions'>
+          <div className='actions__container-fluid'>
+            <select id='language' className='dropdown'></select>
+          </div>
+        </div>
         <Editor
           socketRef={socketRef}
           roomId={roomId}
@@ -136,9 +179,96 @@ const EditorPage = (props) => {
             codeRef.current = code;
           }}
         />
+        <div>
+          <input
+            id='stdin'
+            className='inputBox'
+            placeholder="Inputs (seperated by an ' | ' symbol)"
+          />
+          <button className='btn copyBtn' id='compile'>
+            Compile
+          </button>
+        </div>
+        <div className='fakeScreen' id='opscreen'>
+          <p className='line1'>
+            Output<span className='cursor1'>_</span>
+          </p>
+          <p>{}</p>
+        </div>
       </div>
     </div>
   );
 };
+
+// const languageList = {
+//   C: 'c',
+//   'C-99': 'c99',
+//   'C++': 'cpp',
+//   'C++ 14': 'cpp14',
+//   'C++ 17': 'cpp17',
+//   PHP: 'php',
+//   Perl: 'perl',
+//   'Python 2': 'python2',
+//   'Python 3': 'python3',
+//   Ruby: 'ruby',
+//   'GO Lang': 'go',
+//   Scala: 'scala',
+//   'Bash Shell': 'bash',
+//   SQL: 'sql',
+//   Pascal: 'pascal',
+//   'C#': 'csharp',
+//   'VB.Net': 'vbn',
+//   Haskell: 'haskell',
+//   'Objective C': 'objc',
+//   Swift: 'swift',
+//   Groovy: 'groovy',
+//   Fortran: 'fortran',
+//   Lua: 'lua',
+//   TCL: 'tcl',
+//   Hack: 'hack',
+//   RUST: 'rust',
+//   D: 'd',
+//   Ada: 'ada',
+//   Java: 'java',
+//   'R Language': 'r',
+//   'FREE BASIC': 'freebasic',
+//   VERILOG: 'verilog',
+//   COBOL: 'cobol',
+//   Dart: 'dart',
+//   YaBasic: 'yabasic',
+//   Clojure: 'clojure',
+//   NodeJS: 'nodejs',
+//   Scheme: 'scheme',
+//   Forth: 'forth',
+//   Prolog: 'prolog',
+//   Octave: 'octave',
+//   CoffeeScript: 'coffeescript',
+//   Icon: 'icon',
+//   'F#': 'fsharp',
+//   'Assembler - NASM': 'nasm',
+//   'Assembler - GCC': 'gccasm',
+//   Intercal: 'intercal',
+//   Nemerle: 'nemerle',
+//   Ocaml: 'ocaml',
+//   Unlambda: 'unlambda',
+//   Picolisp: 'picolisp',
+//   SpiderMonkey: 'spidermonkey',
+//   'Rhino JS': 'rhino',
+//   CLISP: 'clisp',
+//   Elixir: 'elixir',
+//   Factor: 'factor',
+//   Falcon: 'falcon',
+//   Fantom: 'fantom',
+//   Nim: 'nim',
+//   Pike: 'pike',
+//   SmallTalk: 'smalltalk',
+//   'OZ Mozart': 'mozart',
+//   LOLCODE: 'lolcode',
+//   Racket: 'racket',
+//   Kotlin: 'kotlin',
+//   Whitespace: 'whitespace',
+//   Erlang: 'erlang',
+//   J: 'jlang',
+// };
 
 export default EditorPage;
