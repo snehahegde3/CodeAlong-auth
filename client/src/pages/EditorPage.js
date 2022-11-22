@@ -20,7 +20,7 @@ const EditorPage = (props) => {
   const { roomId } = useParams();
   const reactNavigator = useNavigate();
   const [clients, setClients] = useState([]);
-  // const [output, setOutput] = useState('');
+  const [output, setOutput] = useState('');
 
   // function addlist() {
   //   var select = document.getElementById('language');
@@ -34,7 +34,7 @@ const EditorPage = (props) => {
 
   //for initialisation of the socket-client
   useEffect(() => {
-    addlist();
+    // addlist();
     const init = async () => {
       socketRef.current = await initSocket();
       socketRef.current.on('connect_error', (err) => handleErrors(err));
